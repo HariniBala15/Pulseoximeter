@@ -8,7 +8,7 @@
 #include <WiFiManager.h>
 
 MAX30100* pulseOxymeter;
-const char* host = "breatheasy.herokuapp.com";
+const char* host = "*********";
 WiFiClient client;
 
 void setup() {
@@ -20,7 +20,7 @@ void setup() {
   pulseOxymeter = new MAX30100();
   pinMode(2, OUTPUT);
 WiFiManager wifiManager;
-  wifiManager.autoConnect("Harinispo2WIFI");
+  wifiManager.autoConnect("*********");
   Serial.println("Connected.");
   Serial.println("IP address= ");
   IPAddress ip = WiFi.localIP();
