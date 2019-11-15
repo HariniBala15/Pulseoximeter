@@ -1,0 +1,72 @@
+#include <Arduino.h>
+#include <math.h>
+#include <Wire.h>
+#include <ESP8266WiFi.h>
+#include "MAX30100.h"
+#include <DNSServer.h>
+#include <ESP8266WebServer.h>
+#include <WiFiManager.h>
+
+MAX30100* pulseOxymeter;
+const char* host = "breatheasy.herokuapp.com";
+WiFiClient client;
+
+void setup() {
+  Wire.begin();
+  Serial.begin(115200);
+  Serial.println("Pulse oxymeter test!");
+
+ //pulseOxymeter = new MAX30100( DEFAULT_OPERATING_MODE,DEFAULT_SAMPLING_RATE, DEFAULT_LED_PULSE_WIDTH,DEFAULT_IR_LED_CURRENT, true, true );
+  pulseOxymeter = new MAX30100();
+  pinMode(2, OUTPUT);
+WiFiManager wifiManager;
+  wifiManager.autoConnect("Harinispo2WIFI");
+  Serial.println("Connected.");
+  Serial.println("IP address= ");
+  IPAddress ip = WiFi.localIP();
+  Serial.println("ip");
+}
+int n = 0;
+String url = "/api/insert";
+void loop() {
+  //return;
+  //You have to call update with frequency at least 37Hz. But the closer you call it to 100Hz the better, the filter will work.
+  pulseoxymeter_t result = pulseOxymeter->update();
+
+
+  if( result.pulseDetected == true )
+  {
+    Serial.println("BEAT");
+
+    Serial.print( "BPM: " );
+    Serial.print( result.heartBPM );
+    Serial.print( " | " );
+
+    Serial.print( "SaO2: " );
+    Serial.print( result.SaO2 );
+    Serial.println( "%" );
+
+    const int httpPort = 80;
+       if (!client.connect(host,httpPort)) {
+         Serial.println("Connection failed!");
+          return;
+        }
+        String value=url;
+        //value=value+n+"/"+pulseadc+"/"+spoadc;
+        value=value+"/"+result.SaO2+"/"+result.heartBPM;
+
+       Serial.print("Requesting URL: ");
+       Serial.println(value);
+       client.print(String("GET ") + value + " HTTP/1.1\r\n" +
+                 "Host: " + host + "\r\n" +
+                 "Connection: close\r\n\r\n");
+
+  }
+
+
+
+
+
+  delay(10);
+
+}
